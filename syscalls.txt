@@ -1,0 +1,11 @@
+access - arquivos OK
+open - arquivos
+close - arquivos
+fstat - arquivos OK
+
+arch_prctl - processos
+execve - processos *
+set_tid_address - processos
+rt_sigaction - processos
+rt_sigprocmask - processos
+geteuid - processos *
