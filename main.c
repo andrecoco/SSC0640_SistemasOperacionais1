@@ -55,8 +55,3 @@ void sysFstat(char *path) {
 	printf("File GID: %d\n", status.st_gid);
 
 }
-
-
-void sysRead(char *pathname) {
-	
-}
