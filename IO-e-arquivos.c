@@ -6,19 +6,22 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
+/*
+	Programa feito para mostrar a utilização
+	de 3 system calls do Linux: access(), fstat() e open()
+*/
 
 //syscalls de E/S e arquivos
-void sysAccess(char *pathname, int mode); //foi
-void sysFstat(char* path);
-void sysRead(char *pathname);
+void sysAccess(char *pathname, int mode);
+void sysFstat(char *path);
 
 
-int main(int argc, char* argv[]) {
-	char* path = argv[1]; //recebe o parâmetro pela linha de comando
-	int mode = F_OK;
+int main(int argc, char *argv[]) {
+	char *path = argv[1]; 		//recebe o parâmetro pela linha de comando
+	int mode = F_OK;			
 
-	//sysFstat(path);
-	//sysAccess(path, mode);
+	//sysFstat(path);			//descomente para utilizar a funcao
+	//sysAccess(path, mode);	//descomente para utilizar a funcao
 	return 0;
 }
 
