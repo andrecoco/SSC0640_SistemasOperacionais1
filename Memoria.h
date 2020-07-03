@@ -73,10 +73,10 @@ public: //tudo antes disso eh private por default
 };
 
 class MemoriaPrincipal {
+
+    public: //tudo antes disso eh private por default
     vector<bool> moldurasOcupadas; //guarda se cada moldura ta ocupada ou n
     vector<Moldura> molduras; //aqui seria tipo a memoria msm, "bruta"
-
-public: //tudo antes disso eh private por default
 
     MemoriaPrincipal() {     // Construtor
       //TODO

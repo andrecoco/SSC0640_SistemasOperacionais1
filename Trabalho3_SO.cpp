@@ -95,10 +95,43 @@ public:
         int IDPaginaVirtual; //ID da pagina virtual
         int PID; //ID do processo cuja pagina sera retirada da moldura
         list<Processo>::iterator itr;
+        list<pair<int, int>>::iterator itrLista;
+
         if (useRelogio) { //Algoritmo do Relogio
             //TODO
-            PID = 0;
-            IDPaginaVirtual = 0;
+            bool achou = false;
+            while (!achou) {
+                PID = ponteiro->first;
+                IDPaginaVirtual = ponteiro->second;
+
+                //pega a tabela de paginas do processo e confere o bit R
+                for (itr = processos.begin(); itr != processos.end(); itr++) {
+                    if (itr->id == PID) {
+                        break;
+                    }
+                }
+                
+                for (int i = 0; i < itr->tabelaPaginas.size(); i++) {
+                    if (itr->tabelaPaginas[i].IDPagina == IDPaginaVirtual) {
+                        if (itr->tabelaPaginas[i].R) { //se o bit R tiver setado, coloca 0 e avanca o ponteiro
+                            itr->tabelaPaginas[i].R = false;
+                            
+                            ponteiro++;
+
+                            //simula o comportamento de uma lista circular
+                            if (ponteiro == paginasAlocadasNaRAM.end()) {
+                                ponteiro = paginasAlocadasNaRAM.begin();
+                            }
+                        }
+                        else {
+                            achou = true;
+                        }
+                        break;
+                    }
+                }
+
+            }
+            
         }
         else { //LRU
             //a pagina menos recentemente usada estará no inicio da lista
@@ -125,6 +158,29 @@ public:
                 break;
             }
         }
+
+        if (useRelogio) {
+            //confere se o ponteiro precisa ser alterado
+            if (paginasAlocadasNaRAM.size() == 1) { //se a lista for ficar vazia
+                ponteiro = paginasAlocadasNaRAM.end();
+            }
+            else if (ponteiro->second == IDPaginaVirtual) {
+
+                ponteiro++;
+
+                //simula o comportamento de uma lista circular
+                if (ponteiro == paginasAlocadasNaRAM.end()) {
+                    ponteiro = paginasAlocadasNaRAM.begin();
+                }
+            }
+        }
+
+        //retira da lista de paginas na RAM
+        for (itrLista = paginasAlocadasNaRAM.begin(); itrLista != paginasAlocadasNaRAM.end(); itrLista++) {
+            if (itrLista->second == IDPaginaVirtual) {
+                paginasAlocadasNaRAM.erase(itrLista);
+            }
+        } 
 
         //Libera essa moldura da RAM
         memPrincipal.desalocarPagina(IDMoldura);

@@ -4,7 +4,7 @@ class EntradaTabelaPagina {
         - Bit presente/ausente
         - Bits Mod e/ou Referenciada (pra usar nos algs de subs)
     */
-public: //tudo antes disso eh private por default
+    public: //tudo antes disso eh private por default
     int IDPagina; //id da pagina virtual
     bool presente; //se está em alguma moldura ou não
     bool M; //se foi modificado enquanto na RAM (memória principal)
@@ -19,8 +19,8 @@ public: //tudo antes disso eh private por default
 
 class Processo {
 
-public: //tudo antes disso eh private por default
-//cada processo tem sua tabela de pagina
+    public: //tudo antes disso eh private por default
+    //cada processo tem sua tabela de pagina
     int id; //numero do processo
     int tamanho; //tamanho do processo
     vector<EntradaTabelaPagina> tabelaPaginas;
