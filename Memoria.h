@@ -69,12 +69,13 @@ public: //tudo antes disso eh private por default
         vector<int> paginasCriadas;
 
         for (int i = 0; i < n; i++) {
-            Pagina *page = new Pagina();
-            if (page == NULL) {
+            Pagina *page = new Pagina(newPageId);
+            if (page == NULL) { //se erro na criacao da pagina, id == -1
                 paginasCriadas.push_back(-1);
                 continue;
             } else {
                 page->id = newPageId;
+                newPageId++;
             }
 
             paginasCriadas.push_back(page->id);
