@@ -9,7 +9,6 @@
 class Pagina {
 public: //tudo antes disso eh private por default
     vector<char> dados; //o conteúdo de endereço vai ser representado por 1 byte
-    string endereco;
     int id;
 
     Pagina() { //Construtor default
@@ -21,17 +20,8 @@ public: //tudo antes disso eh private por default
         this->id = id;
     }
 
-    Pagina(string endereco) {
-        this->endereco = endereco;
-    }
-
-    Pagina(string endereco, int id) {
-        this->endereco = endereco;
+    Pagina(int id, char dados) {
         this->id = id;
-    }
-
-    Pagina(string endereco, char dados) {
-        this->endereco = endereco;
         this->dados = dados;
     }
 };
@@ -93,7 +83,7 @@ public: //tudo antes disso eh private por default
         }
     }
 
-    //atualiza a pagina por essa nova pagina passada (tipo copiar os dados)
+    //atualiza a pagina por essa nova pagina passada
     int atualizaPagina(int IDPaginaVirtual, Pagina novaPagina) {
     	int index;
         Pagina *pagAntiga = buscaPagina(IDPaginaVirtual, &index);

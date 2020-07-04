@@ -2,6 +2,8 @@
 #define PROCESSO_H
 #include <vector>
 #include <string>
+
+
 class EntradaTabelaPagina {
     /*
         - Num da moldura da pag
