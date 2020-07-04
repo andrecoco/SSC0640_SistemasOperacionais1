@@ -95,10 +95,26 @@ public: //tudo antes disso eh private por default
 
     //retorna uma copia da pagina com esse ID
     Pagina retornaPaginaPeloID(int IDPaginaVirtual) {
-        //TODO
-        Pagina teste; //criei isso pra ela retornar algo e poder compilar
-        return teste;
+       Pagina *copia;
+       bool encontrou = false;
+
+       //procura a pagina desejada no vetor de paginas
+       for (int i = 0; i < paginas.size(); i++) {
+            if (paginas[i].id == IDPaginaVirtual) {
+                copia = &(paginas[i]);
+                encontrou = true;
+                break;
+            }
+       }
+
+       if (!encontrou) {
+            return NULL;
+       }
+        
+        return copia;
     }
+
+    
 
 };
 
