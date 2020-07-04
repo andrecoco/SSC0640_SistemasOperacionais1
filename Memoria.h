@@ -1,3 +1,9 @@
+#ifndef MEMORIA_H
+#define MEMORIA_H
+#include <vector>
+#include <iostream>
+
+
 //AS CLASSES
 /*Moldura e Pagina eh onde a memoria realmente ta alocada*/
 class Pagina {
@@ -6,7 +12,12 @@ public: //tudo antes disso eh private por default
     string endereco;
     int id;
 
-    Pagina(int id) {
+    Pagina() { //Construtor default
+
+    }
+
+    //Demais Construtores
+    Pagina(int id) { 
         this->id = id;
     }
 
@@ -14,7 +25,7 @@ public: //tudo antes disso eh private por default
         this->endereco = endereco;
     }
 
-    Pagina(string endereco, int id) {     // Construtor
+    Pagina(string endereco, int id) {
         this->endereco = endereco;
         this->id = id;
     }
@@ -84,37 +95,59 @@ public: //tudo antes disso eh private por default
 
     //atualiza a pagina por essa nova pagina passada (tipo copiar os dados)
     int atualizaPagina(int IDPaginaVirtual, Pagina novaPagina) {
-        //TODO
-        return 1;
+    	int index;
+        Pagina *pagAntiga = buscaPagina(IDPaginaVirtual, &index);
+        int atualizou = 0; //flag de verificacao
+
+        if (pagAntiga->dados != novaPagina.dados) {
+        	*pagAntiga = novaPagina;
+        	atualizou = 1;
+        }
+
+        return atualizou;
     }
 
     //exclui a pagina com esse ID
     int deletaPagina(int IDPaginaVirtual) {
-        //TODO
+    	int index = -1; //indice da pagina desejada no vector de paginas
+    	int deletou = 0; //flag de verificacao
+
+    	Pagina *pag = buscaPagina(IDPaginaVirtual, &index);
+    	if (pag->id != -1 && index != -1) {
+    		paginas.erase(paginas.begin() + index);
+    		deletou = 1;
+    	}
+
+    	return deletou;
     }
 
     //retorna uma copia da pagina com esse ID
     Pagina retornaPaginaPeloID(int IDPaginaVirtual) {
-       Pagina *copia;
-       bool encontrou = false;
+    	Pagina copia;
 
-       //procura a pagina desejada no vetor de paginas
        for (int i = 0; i < paginas.size(); i++) {
             if (paginas[i].id == IDPaginaVirtual) {
-                copia = &(paginas[i]);
-                encontrou = true;
-                break;
+                copia = paginas[i];
+                return copia;
             }
        }
 
-       if (!encontrou) {
-            return NULL;
-       }
-        
-        return copia;
+       return NULL;
     }
 
-    
+    //diferente da funcao acima, ela retorna a propria pagina, e nao uma copia
+    Pagina* buscaPagina(int IDPaginaVirtual, int* index) {
+    	Pagina *naoEncontrou = new Pagina(-1); //instancia uma pagina com id = -1, representando uma pagina inexistente
+
+    	for (int i = 0; i < paginas.size(); i++) {
+    		if (paginas[i].id == IDPaginaVirtual) {
+    			*index = i;
+            	return &(paginas[i]);
+        	}
+    	}
+
+    	return naoEncontrou;
+    }
 
 };
 
@@ -156,3 +189,5 @@ class MemoriaPrincipal {
         return 0;
     }
 };
+
+#endif

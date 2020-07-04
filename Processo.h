@@ -1,3 +1,7 @@
+#ifndef PROCESSO_H
+#define PROCESSO_H
+#include <vector>
+#include <string>
 class EntradaTabelaPagina {
     /*
         - Num da moldura da pag
@@ -63,3 +67,5 @@ class Processo {
         return 0; //conseguiu escrever
     }
 };
+
+#endif
