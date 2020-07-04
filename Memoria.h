@@ -3,9 +3,25 @@
 class Pagina {
 public: //tudo antes disso eh private por default
     vector<char> dados; //o conteúdo de endereço vai ser representado por 1 byte
+    string endereco;
+    int id;
 
-    Pagina() {     // Construtor
-    //TODO
+    Pagina(int id) {
+        this->id = id;
+    }
+
+    Pagina(string endereco) {
+        this->endereco = endereco;
+    }
+
+    Pagina(string endereco, int id) {     // Construtor
+        this->endereco = endereco;
+        this->id = id;
+    }
+
+    Pagina(string endereco, char dados) {
+        this->endereco = endereco;
+        this->dados = dados;
     }
 };
 
@@ -49,7 +65,20 @@ public: //tudo antes disso eh private por default
 
     //aloca n paginas e retorna o ID delas
     vector<int> criarPaginas(int n) {
-        //TODO
+        static int newPageId = 1;
+        vector<int> paginasCriadas;
+
+        for (int i = 0; i < n; i++) {
+            Pagina *page = new Pagina();
+            if (page == NULL) {
+                paginasCriadas.push_back(-1);
+                continue;
+            } else {
+                page->id = newPageId;
+            }
+
+            paginasCriadas.push_back(page->id);
+        }
     }
 
     //atualiza a pagina por essa nova pagina passada (tipo copiar os dados)
