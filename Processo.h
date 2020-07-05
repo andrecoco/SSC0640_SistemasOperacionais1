@@ -2,6 +2,7 @@
 #define PROCESSO_H
 #include <vector>
 #include <string>
+using namespace std;
 
 
 class EntradaTabelaPagina {

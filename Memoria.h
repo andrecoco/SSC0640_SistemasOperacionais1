@@ -2,13 +2,14 @@
 #define MEMORIA_H
 #include <vector>
 #include <iostream>
+using namespace std;
 
 
 //AS CLASSES
 /*Moldura e Pagina eh onde a memoria realmente ta alocada*/
 class Pagina {
 public: //tudo antes disso eh private por default
-    vector<char> dados; //o conteúdo de endereço vai ser representado por 1 byte
+    vector<char> dados; //o conteúdo de endereco vai ser representado por 1 byte
     int id;
 
     Pagina() { //Construtor default
@@ -20,18 +21,29 @@ public: //tudo antes disso eh private por default
         this->id = id;
     }
 
-    Pagina(int id, char dados) {
-        this->id = id;
-        this->dados = dados;
+    Pagina(int id, vector<char> dados) {
+    	this->id = id;
+    	this->dados = dados;
     }
 };
 
 class Moldura {
 public: //tudo antes disso eh private por default
     Pagina pagina;
+    int id;
 
-    Moldura() {     // Construtor
-      //TODO
+    Moldura() {     // Construtor default
+      
+    }
+
+    //Demais construtores
+    Moldura(int id) {
+    	this->id = id;
+    }
+
+    Moldura(int id, Pagina pagina) {
+    	this->id = id;
+    	this->pagina = pagina;
     }
 };
 
@@ -40,8 +52,18 @@ public: //tudo antes disso eh private por default
     vector<bool> paginasOcupadas; //guarda se cada pagina ta utilizada ou n
     vector<Pagina> paginas; //guardam as paginas de todos os processos
 
-    MemoriaSecundaria() {     // Construtor
-      //TODO
+    MemoriaSecundaria() {     // Construtor default
+      
+    }
+
+    //Demais construtores
+    MemoriaSecundaria(vector<Pagina> paginas) {
+    	this->paginas = paginas;
+    }
+
+    MemoriaSecundaria(vector<bool> paginasOcupadas, vector<Pagina> paginas) {
+    	this->paginasOcupadas = paginasOcupadas;
+    	this->paginas = paginas;
     }
 
     //retorna se a memoria esta cheia
@@ -66,7 +88,7 @@ public: //tudo antes disso eh private por default
 
     //aloca n paginas e retorna o ID delas
     vector<int> criarPaginas(int n) {
-        static int newPageId = 1;
+        static int newPageId = 0;
         vector<int> paginasCriadas;
 
         for (int i = 0; i < n; i++) {
@@ -81,39 +103,55 @@ public: //tudo antes disso eh private por default
 
             paginasCriadas.push_back(page->id);
         }
+
+        return paginasCriadas;
     }
 
     //atualiza a pagina por essa nova pagina passada
+    //Se atualizado com sucesso, retorna 0
+    //Senão, retorna 1
     int atualizaPagina(int IDPaginaVirtual, Pagina novaPagina) {
     	int index;
         Pagina *pagAntiga = buscaPagina(IDPaginaVirtual, &index);
-        int atualizou = 0; //flag de verificacao
+        int atualizou = 1; //flag de verificacao
 
         if (pagAntiga->dados != novaPagina.dados) {
         	*pagAntiga = novaPagina;
-        	atualizou = 1;
+        	atualizou = 0;
         }
 
         return atualizou;
     }
 
     //exclui a pagina com esse ID
+    //Se deletado com sucesso, retorna 0
+    //Senão, retorna 1
     int deletaPagina(int IDPaginaVirtual) {
     	int index = -1; //indice da pagina desejada no vector de paginas
-    	int deletou = 0; //flag de verificacao
+    	int deletou = 1; //flag de verificacao
 
     	Pagina *pag = buscaPagina(IDPaginaVirtual, &index);
     	if (pag->id != -1 && index != -1) {
     		paginas.erase(paginas.begin() + index);
-    		deletou = 1;
+    		deletou = 0;
     	}
 
     	return deletou;
     }
 
+     //verifica se existe o endereco desejado na pagina virtual (se esta entre 0 e 1023 bytes)
+    bool enderecoExiste(string endereco) {
+    	if (stoi(endereco) >= 0 && stoi(endereco) <= 1023) {
+    		return true;
+    	} else {
+    		return false;
+    	}
+    }
+
     //retorna uma copia da pagina com esse ID
+    //se pagina com ID inexistente retorna NULL
     Pagina retornaPaginaPeloID(int IDPaginaVirtual) {
-    	Pagina copia;
+    	Pagina copia, *naoEncontrou = new Pagina(-1);
 
        for (int i = 0; i < paginas.size(); i++) {
             if (paginas[i].id == IDPaginaVirtual) {
@@ -122,7 +160,7 @@ public: //tudo antes disso eh private por default
             }
        }
 
-       return NULL;
+       return (*naoEncontrou); //Pagina com id = -1
     }
 
     //diferente da funcao acima, ela retorna a propria pagina, e nao uma copia
@@ -147,8 +185,19 @@ class MemoriaPrincipal {
     vector<bool> moldurasOcupadas; //guarda se cada moldura ta ocupada ou n
     vector<Moldura> molduras; //aqui seria tipo a memoria msm, "bruta"
 
-    MemoriaPrincipal() {     // Construtor
-      //TODO
+    MemoriaPrincipal() {     // Construtor default
+
+    	this->moldurasOcupadas = vector<bool> (16, false); //na criacao, todas as molduras estao disponiveis
+    }
+
+    //Demais construtores
+    MemoriaPrincipal(vector<Moldura> molduras) {
+    	this->molduras = molduras;
+    }
+
+    MemoriaPrincipal(vector<bool> moldurasOcupadas, vector<Moldura> molduras) {
+    	this->moldurasOcupadas = moldurasOcupadas;
+    	this->molduras = molduras;
     }
 
     //retorna se a memoria esta cheia
@@ -160,11 +209,19 @@ class MemoriaPrincipal {
         return true;
     }
 
+    //busca a moldura pelo seu ID e retorna o indice da moldura no vector molduras
+    int buscaMoldura(int IDMoldura) {
+    	for (int i = 0; i < molduras.size(); i++) {
+    		if (IDMoldura == molduras[i].id) {
+    			return i;
+    		}
+    	}
+    }
+
     //retornar uma copia da pagina nessa moldura
     Pagina retornaPagina(int IDMoldura) {
-        //TODO
-        Pagina teste;
-        return teste;
+        Pagina pag;
+        return pag;
     }
 
     //aloca a pagina na memoria principal, retorna o ID da pagina alocada (ou -1 caso a RAM esteja cheia)
