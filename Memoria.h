@@ -91,7 +91,6 @@ public: //tudo antes disso eh private por default
     	vector<int> paginasCriadas;
 
     	if (paginas.empty()) {
-    		cout << "paginas.empty" << endl;
     		static int newPageId = 0;
 
 	        for (int i = 0; i < n; i++) {
@@ -104,10 +103,8 @@ public: //tudo antes disso eh private por default
 	            }
 
 	            paginasCriadas.push_back(page->id);
-	            cout << "fim empty" << endl;
 	        }
     	} else {
-    		cout << "paginas nao empty" << endl;
     		int newID = paginas.back().id + 1;
     		for (int i = 0; i < n; i++) {
     			Pagina *page = new Pagina(newID);
@@ -119,12 +116,10 @@ public: //tudo antes disso eh private por default
 	            }
 
 	            paginasCriadas.push_back(page->id);
-	            cout << "fim nao empty" << endl;
     		}
     	}
 
-    	return paginasCriadas;
-        
+    	return paginasCriadas; 
     }
 
     //atualiza a pagina por essa nova pagina passada
@@ -169,7 +164,7 @@ public: //tudo antes disso eh private por default
     }
 
     //retorna uma copia da pagina com esse ID
-    //se pagina com ID inexistente retorna NULL
+    //se pagina com ID inexistente retorna uma pagina com ID = -1
     Pagina retornaPaginaPeloID(int IDPaginaVirtual) {
     	Pagina copia, *naoEncontrou = new Pagina(-1);
 
@@ -238,22 +233,59 @@ class MemoriaPrincipal {
     	return -1; //se nao achou
     }
 
-    //retornar uma copia da pagina nessa moldura
+    //retorna uma copia da pagina nessa moldura
+    //se pagina inexistente, retorna uma pagina com ID = -1
     Pagina retornaPagina(int IDMoldura) {
-        Pagina pag;
-        return pag;
+    	Pagina *pag = new Pagina(-1), copia;
+        int indexMoldura = buscaMoldura(IDMoldura);
+
+        if (indexMoldura >= 0) {
+        	copia = molduras[indexMoldura];
+        } else {
+        	copia = (*pag);
+        }
+
+        return copia;
+    }
+
+    //retorna o indice da proxima moldura disponivel na memoria
+    int nextFreeMoldura() {
+    	for (int i = 0; i < moldurasOcupadas.size(); i++) {
+    		if (!moldurasOcupadas[i]) {
+    			return i;
+    		}
+    	}
+
+    	return -1; //nao ha molduras livres
     }
 
     //aloca a pagina na memoria principal, retorna o ID da pagina alocada (ou -1 caso a RAM esteja cheia)
     int alocarPagina(Pagina pagina) {
-        //TODO
-        return 0;
+        bool memCheia = isFull();
+
+        if (!memCheia) {
+        	int nextMolduraIndex = nextFreeMoldura();
+        	molduras[nextMolduraIndex].pagina = pagina;
+        } else {
+        	return -1; //erro: memoria cheia. pagina NAO alocada.
+        }
+
+        return molduras[nextMolduraIndex].id; //sucesso. pagina alocada.
     }
 
     //desaloca essa pagina da RAM (recebe o id da moldura)
-    int desalocarPagina(int id) {
-        //TODO
-        return 0;
+    //pagina com id = -2 --> pagina desalocada
+    int desalocarPagina(int idPagina) {
+        for (int i = 0; i < molduras.size(); i++) {
+        	if (molduras[i].pagina.id == idPagina) {
+        		int idMoldura = molduras[i].id;
+        		molduras[i].pagina.id = -2;
+        		moldurasOcupadas[i] = false;
+        		return idMoldura;
+        	}
+        }
+        
+        return -1; //pagina nao encontrada
     }
 };
 
