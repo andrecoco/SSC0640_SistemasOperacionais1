@@ -4,13 +4,12 @@
 #include <iostream>
 #include "Memoria.h"
 #include "Processo.h"
+#include "Auxiliar.h"
 using namespace std;
 
 //DEFINES
-#define ALG_SUBSTITUICAO "LRU" //LRU ou RELOGIO
-#define TAM_PAGINA 1024 //bytes, definimos que seja uma potência de 2
-#define TAM_MEMORIA_SECUNDARIA 32 * TAM_PAGINA
-#define TAM_MEMORIA_FISICA  16 * TAM_PAGINA
+#define ALG_SUBSTITUICAO "RELOGIO" //LRU ou RELOGIO
+
 
 /*
     Ex: TAM_PAGINA 1024
@@ -48,17 +47,6 @@ Pras classes eu coloquei a primeira letra maiscula -> NomeClasse
 Pras variaveis eu usei -> nomeVar
 */
 
-
-//FUNCOES AUXILIARES
-int binary2Decimal(string binario) {
-    int resultado = 0;
-    for (int i = 0; i < binario.size(); i++) {
-        resultado += (binario[i] - (int)'0') * pow(2, binario.size() - i - 1);
-    }
-    return resultado;
-}
-
-
 class Emulador { //seria o SO, todos os comandos passam por essa classe, ela distribui o resto
     bool useRelogio; //define se é relógio ou LRU
     list<Processo> processos;
@@ -73,6 +61,11 @@ class Emulador { //seria o SO, todos os comandos passam por essa classe, ela dis
 
 public:
     Emulador() {
+
+        //Aloca as memorias
+        memPrincipal = *(new MemoriaPrincipal);
+        memSecundaria = *(new MemoriaSecundaria);
+
         if (ALG_SUBSTITUICAO == "RELOGIO") {
             useRelogio = true;
         }
@@ -80,25 +73,31 @@ public:
             useRelogio = false;
         }
 
+        paginasAlocadasNaRAM = *(new list<pair<int, int>>);
+
         ponteiro = paginasAlocadasNaRAM.end();
 
         //o endereco é dividido em dois pedaços, o primeiro é o ID da página, o resto é o endereço na página
-        numBitsEnderecoLogico = ceil(log2(TAM_MEMORIA_SECUNDARIA));
-        numBitsIDPagina = numBitsEnderecoLogico - ceil(log2(TAM_PAGINA));
+        numBitsEnderecoLogico = (int)ceil(log2(TAM_MEMORIA_SECUNDARIA));
+        numBitsIDPagina = numBitsEnderecoLogico - (int)ceil(log2(TAM_PAGINA));
+
+        cout << "############ EMULADOR ############" << endl;
+        cout << "O endereco logico possui " << numBitsEnderecoLogico << "bits" << endl;
+        cout << "Os primeiros " << numBitsIDPagina << "bits representam o numDaPagina" << endl;
+
         //cout << numBitsEnderecoLogico << " " << numBitsIDPagina << endl;
         //cout << binary2Decimal("100111") << endl;
     }
 
     //Retira uma pagina da RAM a partir de um algoritmo de substituicao
     int algSubs() {
-        int IDMoldura; //ID da moldura a ser liberada
+        int IDMoldura = -1; //ID da moldura a ser liberada
         int IDPaginaVirtual; //ID da pagina virtual
         int PID; //ID do processo cuja pagina sera retirada da moldura
         list<Processo>::iterator itr;
         list<pair<int, int>>::iterator itrLista;
 
         if (useRelogio) { //Algoritmo do Relogio
-            //TODO
             bool achou = false;
             while (!achou) {
                 PID = ponteiro->first;
@@ -111,7 +110,7 @@ public:
                     }
                 }
                 
-                for (int i = 0; i < itr->tabelaPaginas.size(); i++) {
+                for (int i = 0; i < (int)itr->tabelaPaginas.size(); i++) {
                     if (itr->tabelaPaginas[i].IDPagina == IDPaginaVirtual) {
                         if (itr->tabelaPaginas[i].R) { //se o bit R tiver setado, coloca 0 e avanca o ponteiro
                             itr->tabelaPaginas[i].R = false;
@@ -146,14 +145,14 @@ public:
             }
         }
 
-        for (int i = 0; i < itr->tabelaPaginas.size(); i++) {
+        for (int i = 0; i < (int)itr->tabelaPaginas.size(); i++) {
             if (itr->tabelaPaginas[i].IDPagina == IDPaginaVirtual) {
                 IDMoldura = itr->tabelaPaginas[i].numMoldura;
                     
                 //Verifica se a pagina foi modificada enquanto em RAM
                 if (itr->tabelaPaginas[i].M) {
                     //atualiza a copia na memoria secundaria
-                    memSecundaria.atualizaPagina(IDPaginaVirtual, memPrincipal.retornaPagina(IDMoldura));
+                    memSecundaria.atualizaPagina(IDPaginaVirtual, memPrincipal.retornaPagina(IDMoldura), true);
                 }
                 break;
             }
@@ -179,10 +178,12 @@ public:
         for (itrLista = paginasAlocadasNaRAM.begin(); itrLista != paginasAlocadasNaRAM.end(); itrLista++) {
             if (itrLista->second == IDPaginaVirtual) {
                 paginasAlocadasNaRAM.erase(itrLista);
+                break;
             }
         } 
 
         //Libera essa moldura da RAM
+        cout << "Emulador: O algoritmo de substituicao liberou a moldura " << IDMoldura << endl;
         memPrincipal.desalocarPagina(IDMoldura);
         
         return 0;
@@ -196,38 +197,42 @@ public:
         1 - Conseguiu Alocar mas precisou tirar uma da RAM
         */
         int IDPaginaVirtual = -1;
-        int NumPaginaNoProcesso = binary2Decimal(endereco.substr(0, numBitsIDPagina - 1)); //o numero da pagina sao os numBitsIDPagina primeiros bits
+        int NumPaginaNoProcesso = binary2Decimal(endereco.substr(0, numBitsIDPagina)); //o numero da pagina sao os numBitsIDPagina primeiros bits
         list<Processo>::iterator itr;
                                                                                            
         //pega a tabela de paginas do processo
         for (itr = processos.begin(); itr != processos.end(); itr++) {
             if (itr->id == PID) {
                 //pega o ID da pagina virtual
-                IDPaginaVirtual = itr->tabelaPaginas[NumPaginaNoProcesso].IDPagina;
+                IDPaginaVirtual = itr->retornaIDPagina(NumPaginaNoProcesso);
                 break;
             }
         }
 
         if (IDPaginaVirtual == -1) {
-            cout << "Nao foi possivel encontrar a pagina!" << endl;
+            cout << "Emulador: Nao foi possivel encontrar a pagina!" << endl;
             return -1;
         }
         
         Pagina paginaVirtual = memSecundaria.retornaPaginaPeloID(IDPaginaVirtual);
         
-        int retorno = memPrincipal.alocarPagina(paginaVirtual);
+        int numMoldura = memPrincipal.alocarPagina(paginaVirtual);
         
-        if (retorno == -1) { //verifica se conseguiu alocar
+        if (numMoldura == -1) { //verifica se conseguiu alocar
             //se a RAM esta cheia, desaloca uma pagina
             algSubs();
-            memPrincipal.alocarPagina(paginaVirtual);
+            numMoldura = memPrincipal.alocarPagina(paginaVirtual);
         }
-        
+
+        //ajeita a tabela do processo
+        itr->tabelaPaginas[NumPaginaNoProcesso].presente = true;
+        itr->tabelaPaginas[NumPaginaNoProcesso].numMoldura = numMoldura;
+
         //adiciona na lista de paginas na RAM
         paginasAlocadasNaRAM.push_back(pair<int, int>(itr->id, IDPaginaVirtual));
 
-        //Se a RAM estivesse vazio, o ponteiro estará errado
-        if (ponteiro == paginasAlocadasNaRAM.end()) {
+        //Se a RAM estivesse vazia, o ponteiro estará errado
+        if (paginasAlocadasNaRAM.size() == 1) {
             ponteiro = paginasAlocadasNaRAM.begin();
         }
 
@@ -242,21 +247,28 @@ public:
         int PID;
         char command;
         list<Processo>::iterator itr;
+        vector<int> novasPaginas;
         bool processoExiste;
-        int resposta;
+        int IDMoldura;
 
-        cout << "Começando a execução do simulador!" << endl;
+
+        cout << "Emulador: Começando a execução do simulador!" << endl;
         while (true) {
             //pega o comando
             getline(cin, entrada);
 
+            //comentario
+            if (entrada[0] == '#')
+                continue;
+
+            //finaliza execucao
             if (entrada[0] == 'Q')
                 break;
-
+            
             vector<int> indexesOfSpaces;
 
             //pega o indice dos espacos
-            for (int i = 0; i < entrada.size(); i++) {
+            for (int i = 0; i < (int)entrada.size(); i++) {
                 if (entrada[i] == ' ')
                     indexesOfSpaces.push_back(i);
             }
@@ -276,27 +288,38 @@ public:
 
             //ARG3 PODE SER O ENDERECO OU TAMANHO, VOU MANTER COMO STRING
 
-            cout << "PID- |" << PID << "| COMANDO- |" << command << "| NUMERO- |" << arg3 << "|" << endl;
+            //cout << "PID- |" << PID << "| COMANDO- |" << command << "| NUMERO- |" << arg3 << "|" << endl;
 
             //C, R, W, P , I
             switch (command) {
                 //Criar processo
                 case 'C':
                     //verifica se o ID nao esta sendo usado
+                    processoExiste = false;
                     for (itr = processos.begin(); itr != processos.end(); itr++) {
                         if (itr->id == PID) {
-                            cout << "Ja existe um Processo com esse ID!" << endl;
+                            cout << "Emulador: Ja existe um Processo com esse ID!" << endl;
+                            processoExiste = true;
                             break;
                         }
                     }
-                    //coloca o processo no final da lista de processos
-                    processos.push_back(Processo(PID, stoi(arg3)));
 
-                    //checa se realmente conseguiu alocar o processo
-                    if (processos.back().id == -1) {
-                        cout << "Não existe memória em disco disponível para criar esse processo!" << endl;
-                        processos.pop_back();
+                    if (processoExiste) { //se ja existe processo com esse ID, para
+                        break;
                     }
+
+                    //Aloca a memoria para o processo
+                    novasPaginas = memSecundaria.criarPaginas(stoi(arg3));
+
+                    //se conseguiu, cria o processo
+                    if (novasPaginas[0] == -1) {
+                        cout << "Emulador: Não existe memória em disco disponível para criar esse processo!" << endl;
+                    }
+                    else {
+                        Processo* novo = new Processo(PID, stoi(arg3), novasPaginas);
+                        processos.push_back(*novo);
+                    }
+
                     break;
 
                 //Matar processo (n sei se precisa fazer)
@@ -316,22 +339,29 @@ public:
                     }
                     
                     if (!processoExiste) {
-                        cout << "Processo não Encontrado!" << endl;
+                        cout << "Emulador: Processo não Encontrado!" << endl;
+                        break;
                     }
 
                     //pede pra ler na memoria
-                    resposta = itr->leMemoria(arg3);
+                    IDMoldura = itr->retornaIDMoldura(arg3);
 
-                    if (resposta == 1) { //Page Fault
+                    if (IDMoldura == -1) { //Page Fault
                         //aloca a pagina na RAM
+                        cout << "Emulador: Ocorreu uma PageFault!" << endl;
                         alocaPaginaRAM(PID, arg3);
 
                         //agora consegue ler
-                        itr->leMemoria(arg3);
+                        IDMoldura = itr->retornaIDMoldura(arg3);
                     }
-                    else if (resposta == 2) { //Endereço Inválido
-                        cout << "Endereço Inválido ou fora da área do programa!" << endl;
+                    else if (IDMoldura == -2) { //Endereço Inválido
+                        cout << "Emulador: Endereço Inválido ou fora da área do programa!" << endl;
+                        break;
                     }
+
+                    //LE NA RAM (OU SO PRINTA KK)
+                    cout << "Emulador: Processo " << PID << " leu no endereço " << arg3 << " que está na moldura " << IDMoldura << endl;
+
                     break;
                 
                 //Escrever Memoria
@@ -346,36 +376,71 @@ public:
                     }
 
                     if (!processoExiste) {
-                        cout << "Processo não Encontrado!" << endl;
+                        cout << "Emulador: Processo não Encontrado!" << endl;
+                        break;
                     }
 
                     //pede pra ler na memoria
-                    resposta = itr->escreveMemoria(arg3);
+                    IDMoldura = itr->retornaIDMoldura(arg3);
 
-                    if (resposta == 1) { //Page Fault
+                    if (IDMoldura == -1) { //Page Fault
                         //aloca a pagina na RAM
+                        cout << "Emulador: Ocorreu uma PageFault!" << endl;
                         alocaPaginaRAM(PID, arg3);
 
-                        //agora consegue ler
-                        itr->escreveMemoria(arg3);
+                        //agora ta na RAM
+                        IDMoldura = itr->retornaIDMoldura(arg3);
                     }
-                    else if (resposta == 2) { //Endereço Inválido
-                        cout << "Endereço Inválido ou fora da área do programa!" << endl;
+                    else if (IDMoldura == -2) { //Endereço Inválido
+                        cout << "Emulador: Endereço Inválido ou fora da área do programa!" << endl;
+                        break;
                     }
+
+                    //ESCREVE NA RAM (OU SO PRINTA KK)
+                    cout << "Emulador: Processo " << PID << " escreveu no endereço " << arg3 << " que está na moldura " << IDMoldura << endl;
+
                     break;
                 
                 //Executar Instrução
                 case 'P':
-                    //TODO
+                    //procura o processo
+                    processoExiste = false;
+                    for (itr = processos.begin(); itr != processos.end(); itr++) {
+                        if (itr->id == PID) {
+                            processoExiste = true;
+                            break;
+                        }
+                    }
+
+                    if (!processoExiste) {
+                        cout << "Emulador: Processo não Encontrado!" << endl;
+                        break;
+                    }
+
+                    cout << "Emulador: O processo " << PID << "executou a instrucao "<< arg3 << endl;
                     break;
                 
                 //IO
                 case 'I':
-                    //TODO
+                    //procura o processo
+                    processoExiste = false;
+                    for (itr = processos.begin(); itr != processos.end(); itr++) {
+                        if (itr->id == PID) {
+                            processoExiste = true;
+                            break;
+                        }
+                    }
+
+                    if (!processoExiste) {
+                        cout << "Emulador: Processo não Encontrado!" << endl;
+                        break;
+                    }
+
+                    cout << "Emulador: O processo " << PID << "executou I/O no dispositivo " << arg3 << endl;
                     break;
                 
                 default:
-                    cout << "Entrada invalida!" << endl;
+                    cout << "Emulador: Entrada invalida!" << endl;
             }
         }
         cout << "Finalizando programa!" << endl;
@@ -384,8 +449,8 @@ public:
 
 int main() {
 
-    Emulador teste;
-    teste.rodarEmulador();
+    Emulador *teste = new Emulador();
+    teste->rodarEmulador();
 
     return 0;
 }

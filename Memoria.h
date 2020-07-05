@@ -2,8 +2,14 @@
 #define MEMORIA_H
 #include <vector>
 #include <iostream>
+#include <string>
+#include "Auxiliar.h"
 using namespace std;
 
+//defines
+#define TAM_PAGINA 1024 //bytes, definimos que seja uma potência de 2
+#define TAM_MEMORIA_SECUNDARIA 6 * TAM_PAGINA
+#define TAM_MEMORIA_FISICA  3 * TAM_PAGINA
 
 //AS CLASSES
 /*Moldura e Pagina eh onde a memoria realmente ta alocada*/
@@ -12,12 +18,16 @@ public: //tudo antes disso eh private por default
     vector<char> dados; //o conteúdo de endereco vai ser representado por 1 byte
     int id;
 
-    Pagina() { //Construtor default
-
+    Pagina() {
+        vector<char>* novo = new vector<char>(TAM_PAGINA);
+        this->dados = *novo;
+        this->id = -1;
     }
 
-    //Demais Construtores
+    //Construtores
     Pagina(int id) { 
+        vector<char>* novo = new vector<char>(TAM_PAGINA);
+        this->dados = *novo;
         this->id = id;
     }
 
@@ -32,8 +42,9 @@ public: //tudo antes disso eh private por default
     Pagina pagina;
     int id;
 
-    Moldura() {     // Construtor default
-      
+    Moldura() { // Construtor default
+        pagina = *(new Pagina());
+        this->id = -1;
     }
 
     //Demais construtores
@@ -51,9 +62,15 @@ class MemoriaSecundaria { //isso seria representando o disco, armazena as página
 public: //tudo antes disso eh private por default
     vector<bool> paginasOcupadas; //guarda se cada pagina ta utilizada ou n
     vector<Pagina> paginas; //guardam as paginas de todos os processos
-
+    
     MemoriaSecundaria() {     // Construtor default
-      
+        this->paginas = *(new vector<Pagina>(TAM_MEMORIA_SECUNDARIA / TAM_PAGINA));
+        for (int i = 0; i < (int)paginas.size(); i++) { //seta o id das paginas (o construtor padrao coloca -1 em tudo)
+            paginas[i].id = i;
+        }
+
+        paginasOcupadas = *(new vector<bool>(paginas.size(), false)); //inicialmente estao todas vazias
+
     }
 
     //Demais construtores
@@ -68,7 +85,7 @@ public: //tudo antes disso eh private por default
 
     //retorna se a memoria esta cheia
     bool isFull() {
-        for (int i = 0; i < paginasOcupadas.size(); i++)
+        for (int i = 0; i < (int)paginasOcupadas.size(); i++)
             if (!paginasOcupadas[i]) //se tem alguma pagina livre
                 return false;
 
@@ -79,17 +96,32 @@ public: //tudo antes disso eh private por default
     bool canFit(int n) {
         int contador = 0;
 
-        for (int i = 0; i < paginasOcupadas.size() && contador <= n; i++)
+        for (int i = 0; i < (int)paginasOcupadas.size() && contador <= n; i++)
             if (!paginasOcupadas[i]) //se essa pagina estiver livre
                 contador++;
 
         return contador >= n;
     }
 
-    //aloca n paginas e retorna o ID delas
+    //aloca n paginas e retorna o ID delas (ou {-1} se n conseguir)
     vector<int> criarPaginas(int n) {
     	vector<int> paginasCriadas;
 
+        //verifica se cabe
+        if(canFit(n)){
+            int contador = 0;
+            for (int i = 0; contador < n; i++) {
+                if (!paginasOcupadas[i]) { //se estiver livre
+                    paginasOcupadas[i] = true;
+                    paginasCriadas.push_back(i);
+                    contador++;
+                }
+            }
+        }
+        else {
+            return { -1 };
+        }
+        /*
     	if (paginas.empty()) {
     		static int newPageId = 0;
 
@@ -117,7 +149,7 @@ public: //tudo antes disso eh private por default
 
 	            paginasCriadas.push_back(page->id);
     		}
-    	}
+    	}*/
 
     	return paginasCriadas; 
     }
@@ -154,9 +186,9 @@ public: //tudo antes disso eh private por default
     	return deletou;
     }
 
-     //verifica se existe o endereco desejado na pagina virtual (se esta entre 0 e 1023 bytes)
+     //verifica se existe o endereco desejado na pagina virtual (se esta entre 0 e TAM_PAGINA bytes)
     bool enderecoExiste(string endereco) {
-    	if (stoi(endereco) >= 0 && stoi(endereco) <= 1023) {
+    	if (stoi(endereco) >= 0 && stoi(endereco) < TAM_PAGINA) {
     		return true;
     	} else {
     		return false;
@@ -168,7 +200,7 @@ public: //tudo antes disso eh private por default
     Pagina retornaPaginaPeloID(int IDPaginaVirtual) {
     	Pagina copia, *naoEncontrou = new Pagina(-1);
 
-       for (int i = 0; i < paginas.size(); i++) {
+       for (int i = 0; i < (int)paginas.size(); i++) {
             if (paginas[i].id == IDPaginaVirtual) {
                 copia = paginas[i];
                 return copia;
@@ -182,7 +214,7 @@ public: //tudo antes disso eh private por default
     Pagina* buscaPagina(int IDPaginaVirtual, int* index) {
     	Pagina *naoEncontrou = new Pagina(-1); //instancia uma pagina com id = -1, representando uma pagina inexistente
 
-    	for (int i = 0; i < paginas.size(); i++) {
+    	for (int i = 0; i < (int)paginas.size(); i++) {
     		if (paginas[i].id == IDPaginaVirtual) {
     			*index = i;
             	return &(paginas[i]);
@@ -201,7 +233,12 @@ class MemoriaPrincipal {
     vector<Moldura> molduras; //aqui seria tipo a memoria msm, "bruta"
 
     MemoriaPrincipal() {     // Construtor default
-    	this->moldurasOcupadas = vector<bool> (16, false); //na criacao, todas as molduras estao disponiveis
+        this->molduras = *(new vector<Moldura>(TAM_MEMORIA_FISICA / TAM_PAGINA));
+        for (int i = 0; i < (int)molduras.size(); i++) {
+            molduras[i].id = i; //seta os ids, que inicialmente eram -1
+        }
+
+    	this->moldurasOcupadas = *(new vector<bool>(molduras.size(), false)); //na criacao, todas as molduras estao disponiveis
     }
 
     //Demais construtores
@@ -216,7 +253,7 @@ class MemoriaPrincipal {
 
     //retorna se a memoria esta cheia
     bool isFull() {
-        for (int i = 0; i < moldurasOcupadas.size(); i++)
+        for (int i = 0; i < (int)moldurasOcupadas.size(); i++)
             if (!moldurasOcupadas[i]) //se tem alguma moldura livre
                 return false;
 
@@ -225,7 +262,7 @@ class MemoriaPrincipal {
 
     //busca a moldura pelo seu ID e retorna o indice da moldura no vector molduras
     int buscaMoldura(int IDMoldura) {
-    	for (int i = 0; i < molduras.size(); i++) {
+    	for (int i = 0; i < (int)molduras.size(); i++) {
     		if (IDMoldura == molduras[i].id) {
     			return i;
     		}
@@ -240,7 +277,7 @@ class MemoriaPrincipal {
         int indexMoldura = buscaMoldura(IDMoldura);
 
         if (indexMoldura >= 0) {
-        	copia = molduras[indexMoldura];
+        	copia = molduras[indexMoldura].pagina;
         } else {
         	copia = (*pag);
         }
@@ -250,7 +287,7 @@ class MemoriaPrincipal {
 
     //retorna o indice da proxima moldura disponivel na memoria
     int nextFreeMoldura() {
-    	for (int i = 0; i < moldurasOcupadas.size(); i++) {
+    	for (int i = 0; i < (int)moldurasOcupadas.size(); i++) {
     		if (!moldurasOcupadas[i]) {
     			return i;
     		}
@@ -262,10 +299,11 @@ class MemoriaPrincipal {
     //aloca a pagina na memoria principal, retorna o ID da pagina alocada (ou -1 caso a RAM esteja cheia)
     int alocarPagina(Pagina pagina) {
         bool memCheia = isFull();
-
+        int nextMolduraIndex;
         if (!memCheia) {
-        	int nextMolduraIndex = nextFreeMoldura();
+        	nextMolduraIndex = nextFreeMoldura();
         	molduras[nextMolduraIndex].pagina = pagina;
+            moldurasOcupadas[nextMolduraIndex] = true;
         } else {
         	return -1; //erro: memoria cheia. pagina NAO alocada.
         }
@@ -275,17 +313,19 @@ class MemoriaPrincipal {
 
     //desaloca essa pagina da RAM (recebe o id da moldura)
     //pagina com id = -2 --> pagina desalocada
-    int desalocarPagina(int idPagina) {
-        for (int i = 0; i < molduras.size(); i++) {
+    int desalocarPagina(int IDMoldura) {
+        /*for (int i = 0; i < molduras.size(); i++) {
         	if (molduras[i].pagina.id == idPagina) {
         		int idMoldura = molduras[i].id;
         		molduras[i].pagina.id = -2;
         		moldurasOcupadas[i] = false;
         		return idMoldura;
         	}
-        }
+        }*/
         
-        return -1; //pagina nao encontrada
+        moldurasOcupadas[IDMoldura] = false;
+
+        return -1; //moldura nao encontrada
     }
 };
 
