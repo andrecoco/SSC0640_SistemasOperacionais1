@@ -206,7 +206,6 @@ class MemoriaPrincipal {
     vector<Moldura> molduras; //aqui seria tipo a memoria msm, "bruta"
 
     MemoriaPrincipal() {     // Construtor default
-
     	this->moldurasOcupadas = vector<bool> (16, false); //na criacao, todas as molduras estao disponiveis
     }
 
@@ -236,6 +235,7 @@ class MemoriaPrincipal {
     			return i;
     		}
     	}
+    	return -1; //se nao achou
     }
 
     //retornar uma copia da pagina nessa moldura
