@@ -88,34 +88,54 @@ public: //tudo antes disso eh private por default
 
     //aloca n paginas e retorna o ID delas
     vector<int> criarPaginas(int n) {
-        static int newPageId = 0;
-        vector<int> paginasCriadas;
+    	vector<int> paginasCriadas;
 
-        for (int i = 0; i < n; i++) {
-            Pagina *page = new Pagina(newPageId);
-            if (page == NULL) { //se erro na criacao da pagina, id == -1
-                paginasCriadas.push_back(-1);
-                continue;
-            } else {
-                page->id = newPageId;
-                newPageId++;
-            }
+    	if (paginas.empty()) {
+    		cout << "paginas.empty" << endl;
+    		static int newPageId = 0;
 
-            paginasCriadas.push_back(page->id);
-        }
+	        for (int i = 0; i < n; i++) {
+	            Pagina *page = new Pagina(newPageId);
+	            if (page == NULL) { //se erro na criacao da pagina, id == -1
+	                paginasCriadas.push_back(-1);
+	                continue;
+	            } else {
+	                newPageId++;
+	            }
 
-        return paginasCriadas;
+	            paginasCriadas.push_back(page->id);
+	            cout << "fim empty" << endl;
+	        }
+    	} else {
+    		cout << "paginas nao empty" << endl;
+    		int newID = paginas.back().id + 1;
+    		for (int i = 0; i < n; i++) {
+    			Pagina *page = new Pagina(newID);
+	            if (page == NULL) { //se erro na criacao da pagina, id == -1
+	                paginasCriadas.push_back(-1);
+	                continue;
+	            } else {
+	                newID++;
+	            }
+
+	            paginasCriadas.push_back(page->id);
+	            cout << "fim nao empty" << endl;
+    		}
+    	}
+
+    	return paginasCriadas;
+        
     }
 
     //atualiza a pagina por essa nova pagina passada
     //Se atualizado com sucesso, retorna 0
     //Senão, retorna 1
-    int atualizaPagina(int IDPaginaVirtual, Pagina novaPagina) {
+    int atualizaPagina(int IDPaginaVirtual, Pagina novaPagina, bool modifBit) {
     	int index;
         Pagina *pagAntiga = buscaPagina(IDPaginaVirtual, &index);
         int atualizou = 1; //flag de verificacao
 
-        if (pagAntiga->dados != novaPagina.dados) {
+        if (modifBit) {
         	*pagAntiga = novaPagina;
         	atualizou = 0;
         }
