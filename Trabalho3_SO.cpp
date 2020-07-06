@@ -232,14 +232,16 @@ public:
         int numPagina;
 
 
-        cout << "Emulador: Começando a execução do simulador!" << endl;
+        cout << "Emulador: Comecando a execucao do simulador!" << endl;
         while (true) {
             //pega o comando
             getline(cin, entrada);
-
+               
             //comentario
             if (entrada[0] == '#')
                 continue;
+
+            cout << "Entrada: " << entrada << endl;
 
             //finaliza execucao
             if (entrada[0] == 'Q')
@@ -251,6 +253,11 @@ public:
             for (int i = 0; i < (int)entrada.size(); i++) {
                 if (entrada[i] == ' ')
                     indexesOfSpaces.push_back(i);
+            }
+
+            if (indexesOfSpaces.size() < 2) {
+                cout << "Emulador: Entrada invalida!" << endl;
+                continue;
             }
 
             //pega cada pedaco do comando
@@ -289,9 +296,10 @@ public:
 
                     //se conseguiu, cria o processo
                     if (novasPaginas[0] == -1) {
-                        cout << "Emulador: Não existe memória em disco disponível para criar esse processo!" << endl;
+                        cout << "Emulador: Nao existe memoria em disco disponivel para criar esse processo!" << endl;
                     }
                     else {
+                        cout << "Emulador: Processo " << PID << " criado com sucesso!" << endl;
                         Processo* novo = new Processo(PID, stoi(arg3), novasPaginas);
                         processos.push_back(*novo);
                     }
@@ -310,7 +318,7 @@ public:
                     }
                     
                     if (!processoExiste) {
-                        cout << "Emulador: Processo não Encontrado!" << endl;
+                        cout << "Emulador: Processo nao Encontrado!" << endl;
                         break;
                     }
 
@@ -326,7 +334,7 @@ public:
                         IDMoldura = itr->retornaIDMoldura(arg3);
                     }
                     else if (IDMoldura == -2) { //Endereço Inválido
-                        cout << "Emulador: Endereço Inválido ou fora da área do programa!" << endl;
+                        cout << "Emulador: Endereco Invalido ou fora da area do programa!" << endl;
                         break;
                     }
 
@@ -348,7 +356,7 @@ public:
                     }
 
                     //printa
-                    cout << "Emulador: Processo " << PID << " leu no endereço " << arg3 << " que está na moldura " << IDMoldura << endl;
+                    cout << "Emulador: Processo " << PID << " leu no endereco " << arg3 << " que esta na moldura " << IDMoldura << endl;
 
                     break;
                 
@@ -364,7 +372,7 @@ public:
                     }
 
                     if (!processoExiste) {
-                        cout << "Emulador: Processo não Encontrado!" << endl;
+                        cout << "Emulador: Processo nao Encontrado!" << endl;
                         break;
                     }
 
@@ -380,7 +388,7 @@ public:
                         IDMoldura = itr->retornaIDMoldura(arg3);
                     }
                     else if (IDMoldura == -2) { //Endereço Inválido
-                        cout << "Emulador: Endereço Inválido ou fora da área do programa!" << endl;
+                        cout << "Emulador: Endereço Invalido ou fora da area do programa!" << endl;
                         break;
                     }
 
@@ -392,7 +400,7 @@ public:
                     itr->tabelaPaginas[numPagina].M = true;
 
                     //printa
-                    cout << "Emulador: Processo " << PID << " escreveu no endereço " << arg3 << " que está na moldura " << IDMoldura << endl;
+                    cout << "Emulador: Processo " << PID << " escreveu no endereço " << arg3 << " que esta na moldura " << IDMoldura << endl;
 
                     break;
                 
@@ -408,7 +416,7 @@ public:
                     }
 
                     if (!processoExiste) {
-                        cout << "Emulador: Processo não Encontrado!" << endl;
+                        cout << "Emulador: Processo nao Encontrado!" << endl;
                         break;
                     }
 
@@ -427,7 +435,7 @@ public:
                     }
 
                     if (!processoExiste) {
-                        cout << "Emulador: Processo não Encontrado!" << endl;
+                        cout << "Emulador: Processo nao Encontrado!" << endl;
                         break;
                     }
 
