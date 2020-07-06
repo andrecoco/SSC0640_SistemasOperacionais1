@@ -400,7 +400,7 @@ public:
                     itr->tabelaPaginas[numPagina].M = true;
 
                     //printa
-                    cout << "Emulador: Processo " << PID << " escreveu no endereço " << arg3 << " que esta na moldura " << IDMoldura << endl;
+                    cout << "Emulador: Processo " << PID << " escreveu no endereco " << arg3 << " que esta na moldura " << IDMoldura << endl;
 
                     break;
                 
