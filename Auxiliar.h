@@ -1,6 +1,7 @@
 #ifndef AUXILIAR_H
 #define AUXILIAR_H
 #include <string>
+#include <math.h>
 using namespace std;
 
 //FUNCOES AUXILIARES
