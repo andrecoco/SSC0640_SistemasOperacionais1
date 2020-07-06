@@ -8,7 +8,7 @@
 using namespace std;
 
 //DEFINES
-#define ALG_SUBSTITUICAO "LRU" //LRU ou RELOGIO
+#define ALG_SUBSTITUICAO "RELOGIO" //LRU ou RELOGIO
 
 class Emulador { //seria o SO, todos os comandos passam por essa classe, ela distribui o resto
     bool useRelogio; //define se é relógio ou LRU
@@ -83,11 +83,12 @@ public:
                         if (itr->tabelaPaginas[i].R) { //se o bit R tiver setado, coloca 0 e avanca o ponteiro
                             itr->tabelaPaginas[i].R = false;
                             
-                            ponteiro++;
-
-                            //simula o comportamento de uma lista circular
-                            if (ponteiro == paginasAlocadasNaRAM.end()) {
-                                ponteiro = paginasAlocadasNaRAM.begin();
+                            if(ponteiro == paginasAlocadasNaRAM.begin()){
+                                ponteiro = paginasAlocadasNaRAM.end();
+                                ponteiro--;
+                            }
+                            else {
+                                ponteiro--;
                             }
                         }
                         else {
@@ -133,11 +134,12 @@ public:
             }
             else if (ponteiro->second == IDPaginaVirtual) {
 
-                ponteiro++;
-
-                //simula o comportamento de uma lista circular
-                if (ponteiro == paginasAlocadasNaRAM.end()) {
-                    ponteiro = paginasAlocadasNaRAM.begin();
+                if (ponteiro == paginasAlocadasNaRAM.begin()) {
+                    ponteiro = paginasAlocadasNaRAM.end();
+                    ponteiro--;
+                }
+                else {
+                    ponteiro--;
                 }
             }
         }
@@ -167,7 +169,7 @@ public:
         int IDPaginaVirtual = -1;
         int NumPaginaNoProcesso = binary2Decimal(endereco.substr(0, numBitsIDPagina)); //o numero da pagina sao os numBitsIDPagina primeiros bits
         list<Processo>::iterator itr;
-                                                                                           
+                                                                  
         //pega a tabela de paginas do processo
         for (itr = processos.begin(); itr != processos.end(); itr++) {
             if (itr->id == PID) {

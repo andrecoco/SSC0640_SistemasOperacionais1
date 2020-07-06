@@ -6,7 +6,6 @@
 #include "Memoria.h"
 using namespace std;
 
-
 class EntradaTabelaPagina {
     /*
         - Num da moldura da pag
@@ -84,8 +83,6 @@ class Processo {
         string SenderecoNaPagina = endereco.substr(numBitsIDPagina, numBitsEnderecoNaPagina);
         int numPagina = binary2Decimal(SnumPagina);
         int enderecoNaPagina = binary2Decimal(SenderecoNaPagina);
-
-        //cout << "DEBUGG: " << numPagina << endl;
 
         //verifica se o processo possui essa pagina
         if ((int)tabelaPaginas.size() <= numPagina) {

@@ -121,36 +121,6 @@ public: //tudo antes disso eh private por default
         else {
             return { -1 };
         }
-        /*
-    	if (paginas.empty()) {
-    		static int newPageId = 0;
-
-	        for (int i = 0; i < n; i++) {
-	            Pagina *page = new Pagina(newPageId);
-	            if (page == NULL) { //se erro na criacao da pagina, id == -1
-	                paginasCriadas.push_back(-1);
-	                continue;
-	            } else {
-	                newPageId++;
-	            }
-
-	            paginasCriadas.push_back(page->id);
-	        }
-    	} else {
-    		int newID = paginas.back().id + 1;
-    		for (int i = 0; i < n; i++) {
-    			Pagina *page = new Pagina(newID);
-	            if (page == NULL) { //se erro na criacao da pagina, id == -1
-	                paginasCriadas.push_back(-1);
-	                continue;
-	            } else {
-	                newID++;
-	            }
-
-	            paginasCriadas.push_back(page->id);
-    		}
-    	}*/
-
     	return paginasCriadas; 
     }
 
@@ -312,19 +282,8 @@ class MemoriaPrincipal {
     }
 
     //desaloca essa pagina da RAM (recebe o id da moldura)
-    //pagina com id = -2 --> pagina desalocada
     int desalocarPagina(int IDMoldura) {
-        /*for (int i = 0; i < molduras.size(); i++) {
-        	if (molduras[i].pagina.id == idPagina) {
-        		int idMoldura = molduras[i].id;
-        		molduras[i].pagina.id = -2;
-        		moldurasOcupadas[i] = false;
-        		return idMoldura;
-        	}
-        }*/
-        
         moldurasOcupadas[IDMoldura] = false;
-
         return -1; //moldura nao encontrada
     }
 };
