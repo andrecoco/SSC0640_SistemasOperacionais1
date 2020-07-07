@@ -1,13 +1,12 @@
-Repositório de SO
-
+## Repositório de SO
 Link para o vídeo: https://youtu.be/ds1sCGkhvl8
 
-
+# Instruções
 Para utilizar o arquivo de casos de teste no programa basta compilar o arquivo principal (Trabalho3_SO.cpp)
 e utilizar o seguinte comando:
 ./executavelDoPrograma < casosDeTeste.txt
 
-
+## Comandos
 No arquivo de casos de teste, o '#' é usado para comentários. Linhas iniciadas por '#' não fazem parte do código.
 As instruções que o gerenciador é capaz de realizar são:
 - C: cria um novo processo com um ID e tamanho (em número de páginas) especificado.
