@@ -1,4 +1,5 @@
 Repositório de SO
+
 Link para o vídeo: https://youtu.be/ds1sCGkhvl8
 
 
