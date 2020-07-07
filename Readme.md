@@ -41,3 +41,6 @@ O gerenciador também simula operações de I/O e CPU, com os comandos:
 
 - P: simula uma execução de instrução de CPU.<br/>
 	Ex.: P1 P 1
+	
+## OBS:
+Na VM o código não compilou, provavelmente pois o compilador de c++ está numa versão antiga, e algumas coisas utilizadas pelo trabalho não são suportadas por compiladores antigos.
