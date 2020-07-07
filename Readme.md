@@ -6,6 +6,21 @@ Para utilizar o arquivo de casos de teste no programa basta compilar o arquivo p
 e utilizar o seguinte comando:
 ./executavelDoPrograma < casosDeTeste.txt
 
+## Configuração
+Existem alguns defines no código para definir o tamanho de cada página (em bytes), os tamanhos da memória principal e secundária (múltiplos do tamanho de página), além de um define sobre qual algoritmo de substituição será utilizado (LRU ou Relógio).<br/>
+Ex:
+
+```
+//defines no Memoria.h
+#define TAM_PAGINA 1024 //bytes, definimos que seja uma potência de 2
+#define TAM_MEMORIA_SECUNDARIA 6 * TAM_PAGINA
+#define TAM_MEMORIA_FISICA  3 * TAM_PAGINA
+```
+```
+//define no Trabalho3_SO.cpp
+#define ALG_SUBSTITUICAO "RELOGIO" //LRU ou RELOGIO
+```
+
 ## Comandos
 No arquivo de casos de teste, o '#' é usado para comentários. Linhas iniciadas por '#' não fazem parte do código.
 As instruções que o gerenciador é capaz de realizar são:
